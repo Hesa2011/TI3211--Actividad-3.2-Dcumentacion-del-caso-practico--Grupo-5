@@ -1,0 +1,110 @@
+#Caso practico venta de asientos de un avion de 56 puestos actividad-3.2 (Cola utilizando Pilas y  Listas Enlazadas)
+
+filas = 8
+columnas = 7
+asientos = [[None for _ in range(columnas)] for _ in range(filas)]
+
+
+def mostrar_asientos():
+    for fila in range(filas):
+        for columna in range(columnas):
+            if asientos[fila][columna] is None:
+                print(f"{fila+1}{chr(65 + columna)}: Libre", end=" | ")
+            else:
+                print(f"{fila+1}{chr(65 + columna)}: Ocupado", end=" | ")
+        print()  
+
+
+class Pasajero:
+    def __init__(self, nombre, genero, asiento, boleto, clase, horario, tipo_pasajero):
+        self.nombre = nombre
+        self.genero = genero 
+        self.asiento = asiento
+        self.boleto = boleto
+        self.fecha_de_vuelo = "2024-09-12"
+        self.destino = "Miami"
+        self.clase = clase
+        self.horario = horario
+        self.tipo_pasajero = tipo_pasajero
+        self.precio = None
+
+    def __str__(self):
+        return f"{self.nombre}, {self.genero}, Asiento: {self.asiento}, Boleto: {self.boleto}, Fecha: {self.fecha_de_vuelo}, Destino: {self.destino}, Precio: ${self.precio}"
+
+
+def obtener_precio_asiento(fila, columna):
+
+    if fila < 3:
+        return 150  # Asientos en clase premium
+    else:
+        return 100  # Asientos en clase turista
+
+def obtener_precio_vuelo(clase, horario, tipo_pasajero):
+    
+    if clase == "Premium":
+        return 300
+    elif clase == "Económica":
+        return 200
+    elif clase == "Turista":
+        return 100
+    else:
+        return 0
+
+
+def asignar_asiento(fila, columna, pasajero):
+    if 0 <= fila < filas and 0 <= columna < columnas:
+        if asientos[fila][columna] is None:
+            precio_asiento = obtener_precio_asiento(fila, columna)
+            precio_vuelo = obtener_precio_vuelo(pasajero.clase, pasajero.horario, pasajero.tipo_pasajero)
+            pasajero.precio = precio_asiento + precio_vuelo
+            asientos[fila][columna] = pasajero
+        else:
+            print(f"Error: El asiento {fila+1}{chr(65 + columna)} ya está ocupado.")
+    else:
+        print(f"Error: Fila {fila+1} o columna {chr(65 + columna)} fuera del rango.")
+
+
+class Pila:
+    def __init__(self):
+        self.items = []
+
+    def apilar(self, item):
+        self.items.append(item)
+
+    def desapilar(self):
+        if not self.esta_vacia():
+            return self.items.pop()
+        return None
+
+    def esta_vacia(self):
+        return len(self.items) == 0
+
+class ColaConPilas:
+    def __init__(self):
+        self.pila_in = Pila()
+        self.pila_out = Pila()
+
+    def enqueue(self, item):
+        self.pila_in.apilar(item)
+
+    def dequeue(self):
+        if self.pila_out.esta_vacia():
+            while not self.pila_in.esta_vacia():
+                self.pila_out.apilar(self.pila_in.desapilar())
+        return self.pila_out.desapilar()
+
+    def esta_vacia(self):
+        return self.pila_in.esta_vacia() and self.pila_out.esta_vacia()
+
+
+cola = ColaConPilas()
+
+
+cola.enqueue(Pasajero("Maria J", "F", "7C", "C007", "Económica", "Pico", "Adulto"))
+cola.enqueue(Pasajero("Julia M", "F", "5D", "D005", "Premium", "No Pico", "Niño"))
+
+while not cola.esta_vacia():
+    pasajero = cola.dequeue()
+    fila, columna = 0, 0  
+    asignar_asiento(fila, columna, pasajero)
+    mostrar_asientos() 
